@@ -169,32 +169,38 @@ window.addEventListener("mousemove", function (event) {
 
 });
 
-document.querySelector("form").addEventListener("submit", async function (event) {
-  event.preventDefault(); // Prevent page reload
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("reservation-form");
 
-  const formData = {
-    name: document.querySelector("[name='name']").value,
-    phone: document.querySelector("[name='phone']").value,
-    person: document.querySelector("[name='person']").value,
-    reservationDate: document.querySelector("[name='reservation-date']").value,
-    time: document.querySelector("[name='time']").value,
-    message: document.querySelector("[name='message']").value
-  };
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault(); // Stop the default behavior (page reload/scrolling)
 
-  try {
-    const response = await fetch("https://the-jar-cafe.onrender.com/api/reservations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData)
-    });
+    // Get form data
+    const formData = {
+      name: document.querySelector("[name='name']").value,
+      phone: document.querySelector("[name='phone']").value,
+      person: document.querySelector("[name='person']").value,
+      reservationDate: document.querySelector("[name='reservation-date']").value,
+      time: document.querySelector("[name='time']").value,
+      message: document.querySelector("[name='message']").value
+    };
 
-    if (response.ok) {
-      alert("Reservation Successful!");
-    } else {
-      alert("Failed to reserve. Please try again.");
+    try {
+      const response = await fetch("https://the-jar-cafe.onrender.com/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        alert("Reservation Successful!");
+        form.reset(); // Clear the form after successful submission
+      } else {
+        alert("Failed to reserve. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Server error. Try again later.");
     }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Server error. Try again later.");
-  }
+  });
 });
