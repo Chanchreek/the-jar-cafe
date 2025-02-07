@@ -169,29 +169,32 @@ window.addEventListener("mousemove", function (event) {
 
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    const reservationForm = document.querySelector("#reservationForm");
+document.querySelector("form").addEventListener("submit", async function (event) {
+  event.preventDefault(); // Prevent page reload
 
-    if (reservationForm) {
-        reservationForm.addEventListener("submit", function (event) {
-            event.preventDefault(); // Prevent page reload
+  const formData = {
+    name: document.querySelector("[name='name']").value,
+    phone: document.querySelector("[name='phone']").value,
+    person: document.querySelector("[name='person']").value,
+    reservationDate: document.querySelector("[name='reservation-date']").value,
+    time: document.querySelector("[name='time']").value,
+    message: document.querySelector("[name='message']").value
+  };
 
-            const name = document.querySelector("[name='name']").value;
-            const phone = document.querySelector("[name='phone']").value;
-            const person = document.querySelector("[name='person']").value;
-            const reservationDate = document.querySelector("[name='reservation-date']").value;
-            const message = document.querySelector("[name='message']").value;
+  try {
+    const response = await fetch("https://the-jar-cafe.onrender.com/api/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
 
-            fetch("https://the-jar-cafe.onrender.com/reservations", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, phone, person, reservationDate, message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.success || data.error); // Show success or error message
-            })
-            .catch(error => console.error("Error:", error));
-        });
+    if (response.ok) {
+      alert("Reservation Successful!");
+    } else {
+      alert("Failed to reserve. Please try again.");
     }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Server error. Try again later.");
+  }
 });
