@@ -170,19 +170,38 @@ window.addEventListener("mousemove", function (event) {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("reservation-form");
+  const form = document.getElementById("reservationForm");
+
+  if (!form) {
+    console.error("Reservation form not found!");
+    return;
+  }
 
   form.addEventListener("submit", async function (event) {
-    event.preventDefault(); // Stop the default behavior (page reload/scrolling)
+    event.preventDefault(); // Stop the default behavior (page reload)
 
-    // Get form data
+    // Get form inputs
+    const name = document.querySelector("[name='name']").value.trim();
+    const phone = document.querySelector("[name='phone']").value.trim();
+    const person = document.querySelector("[name='person']").value;
+    const date = document.querySelector("[name='reservation-date']").value;
+    const time = document.querySelector("[name='time']").value;
+    const message = document.querySelector("[name='message']").value.trim();
+
+    // Basic validation
+    if (!name || !phone || !date || !time) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    // Prepare form data
     const formData = {
-      name: document.querySelector("[name='name']").value,
-      phone: document.querySelector("[name='phone']").value,
-      person: document.querySelector("[name='person']").value,
-      reservationDate: document.querySelector("[name='reservation-date']").value,
-      time: document.querySelector("[name='time']").value,
-      message: document.querySelector("[name='message']").value
+      name,
+      phone,
+      person,
+      reservationDate: date,
+      time,
+      message
     };
 
     try {
@@ -193,8 +212,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (response.ok) {
-        alert("Reservation Successful!");
-        form.reset(); // Clear the form after successful submission
+        alert("Reservation successful!");
+        form.reset(); // Clear form fields
       } else {
         alert("Failed to reserve. Please try again.");
       }
