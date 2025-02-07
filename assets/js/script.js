@@ -168,3 +168,30 @@ window.addEventListener("mousemove", function (event) {
   }
 
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const reservationForm = document.querySelector("#reservationForm");
+
+    if (reservationForm) {
+        reservationForm.addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent page reload
+
+            const name = document.querySelector("[name='name']").value;
+            const phone = document.querySelector("[name='phone']").value;
+            const person = document.querySelector("[name='person']").value;
+            const reservationDate = document.querySelector("[name='reservation-date']").value;
+            const message = document.querySelector("[name='message']").value;
+
+            fetch("https://the-jar-cafe.onrender.com/reservations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, phone, person, reservationDate, message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.success || data.error); // Show success or error message
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    }
+});
