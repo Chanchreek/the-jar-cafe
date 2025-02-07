@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// API Route to send emails
+// API Route to send general contact emails
 app.post('/send-email', async (req, res) => {
     const { name, email, message } = req.body;
 
@@ -38,7 +38,32 @@ app.post('/send-email', async (req, res) => {
         await transporter.sendMail(mailOptions);
         res.status(200).json({ success: 'Email sent successfully!' });
     } catch (error) {
+        console.error("Error sending email:", error);
         res.status(500).json({ error: 'Failed to send email' });
+    }
+});
+
+// API Route to handle reservations
+app.post('/api/reservations', async (req, res) => {
+    const { name, phone, person, reservationDate, time, message } = req.body;
+
+    if (!name || !phone || !person || !reservationDate || !time) {
+        return res.status(400).json({ error: 'All required fields must be filled.' });
+    }
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER, // Your email to receive reservations
+        subject: `New Reservation from ${name}`,
+        text: `Name: ${name}\nPhone: ${phone}\nPersons: ${person}\nDate: ${reservationDate}\nTime: ${time}\nMessage: ${message || 'No additional message'}`,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ success: 'Reservation request sent successfully!' });
+    } catch (error) {
+        console.error("Error sending reservation email:", error);
+        res.status(500).json({ error: 'Failed to send reservation request' });
     }
 });
 
