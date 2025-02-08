@@ -76,14 +76,14 @@ app.post('/api/reservations', async (req, res) => {
 
     // WhatsApp Confirmation Message to User
     const whatsappMessage = `Hello ${name}, your reservation at The Jar Café is confirmed!\n\nDate: ${reservationDate}\nTime: ${time}\nPersons: ${person}\n\nSee you soon! ☕`;
-
+    const userPhoneNumber = phone.startsWith("+") ? phone : `+91${phone}`;
     try {
         await Promise.all([
             transporter.sendMail(adminMailOptions), // Email to Admin
             transporter.sendMail(userMailOptions),  // Email to User
             client.messages.create({  // WhatsApp Message
                 from: process.env.TWILIO_WHATSAPP_NUMBER,
-                to: `whatsapp:${phone}`,  // User's WhatsApp Number
+                to: `whatsapp:${userPhoneNumber}`,  // User's WhatsApp Number
                 body: whatsappMessage
             })
         ]);
