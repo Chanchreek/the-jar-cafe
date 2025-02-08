@@ -1,18 +1,38 @@
 'use strict';
 
+
+
 /**
  * PRELOAD
- * Loading will end after document is loaded.
+ * 
+ * loading will be end after document is loaded
  */
+
 const preloader = document.querySelector("[data-preaload]");
+
 window.addEventListener("load", function () {
   preloader.classList.add("loaded");
   document.body.classList.add("loaded");
 });
 
+
+
 /**
- * NAVBAR TOGGLE
+ * add event listener on multiple elements
  */
+
+const addEventOnElements = function (elements, eventType, callback) {
+  for (let i = 0, len = elements.length; i < len; i++) {
+    elements[i].addEventListener(eventType, callback);
+  }
+}
+
+
+
+/**
+ * NAVBAR
+ */
+
 const navbar = document.querySelector("[data-navbar]");
 const navTogglers = document.querySelectorAll("[data-nav-toggler]");
 const overlay = document.querySelector("[data-overlay]");
@@ -21,25 +41,31 @@ const toggleNavbar = function () {
   navbar.classList.toggle("active");
   overlay.classList.toggle("active");
   document.body.classList.toggle("nav-active");
-};
+}
 
-navTogglers.forEach((toggler) => toggler.addEventListener("click", toggleNavbar));
+addEventOnElements(navTogglers, "click", toggleNavbar);
+
+
 
 /**
- * HEADER & BACK TO TOP BUTTON
+ * HEADER & BACK TOP BTN
  */
+
 const header = document.querySelector("[data-header]");
 const backTopBtn = document.querySelector("[data-back-top-btn]");
+
 let lastScrollPos = 0;
 
 const hideHeader = function () {
-  if (lastScrollPos < window.scrollY) {
+  const isScrollBottom = lastScrollPos < window.scrollY;
+  if (isScrollBottom) {
     header.classList.add("hide");
   } else {
     header.classList.remove("hide");
   }
+
   lastScrollPos = window.scrollY;
-};
+}
 
 window.addEventListener("scroll", function () {
   if (window.scrollY >= 50) {
@@ -52,36 +78,97 @@ window.addEventListener("scroll", function () {
   }
 });
 
+
+
 /**
- * HERO SLIDER FIX
+ * HERO SLIDER
  */
+
+const heroSlider = document.querySelector("[data-hero-slider]");
 const heroSliderItems = document.querySelectorAll("[data-hero-slider-item]");
 const heroSliderPrevBtn = document.querySelector("[data-prev-btn]");
 const heroSliderNextBtn = document.querySelector("[data-next-btn]");
+
 let currentSlidePos = 0;
+let lastActiveSliderItem = heroSliderItems[0];
 
 const updateSliderPos = function () {
-  heroSliderItems.forEach((item, index) => {
-    item.classList.toggle("active", index === currentSlidePos);
-  });
-};
+  lastActiveSliderItem.classList.remove("active");
+  heroSliderItems[currentSlidePos].classList.add("active");
+  lastActiveSliderItem = heroSliderItems[currentSlidePos];
+}
 
 const slideNext = function () {
-  currentSlidePos = (currentSlidePos + 1) % heroSliderItems.length;
-  updateSliderPos();
-};
+  if (currentSlidePos >= heroSliderItems.length - 1) {
+    currentSlidePos = 0;
+  } else {
+    currentSlidePos++;
+  }
 
-const slidePrev = function () {
-  currentSlidePos = (currentSlidePos - 1 + heroSliderItems.length) % heroSliderItems.length;
   updateSliderPos();
-};
+}
 
 heroSliderNextBtn.addEventListener("click", slideNext);
+
+const slidePrev = function () {
+  if (currentSlidePos <= 0) {
+    currentSlidePos = heroSliderItems.length - 1;
+  } else {
+    currentSlidePos--;
+  }
+
+  updateSliderPos();
+}
+
 heroSliderPrevBtn.addEventListener("click", slidePrev);
 
 /**
- * RESERVATION FORM HANDLING
+ * auto slide
  */
+
+let autoSlideInterval;
+
+const autoSlide = function () {
+  autoSlideInterval = setInterval(function () {
+    slideNext();
+  }, 7000);
+}
+
+addEventOnElements([heroSliderNextBtn, heroSliderPrevBtn], "mouseover", function () {
+  clearInterval(autoSlideInterval);
+});
+
+addEventOnElements([heroSliderNextBtn, heroSliderPrevBtn], "mouseout", autoSlide);
+
+window.addEventListener("load", autoSlide);
+
+
+
+/**
+ * PARALLAX EFFECT
+ */
+
+const parallaxItems = document.querySelectorAll("[data-parallax-item]");
+
+let x, y;
+
+window.addEventListener("mousemove", function (event) {
+
+  x = (event.clientX / window.innerWidth * 10) - 5;
+  y = (event.clientY / window.innerHeight * 10) - 5;
+
+  // reverse the number eg. 20 -> -20, -5 -> 5
+  x = x - (x * 2);
+  y = y - (y * 2);
+
+  for (let i = 0, len = parallaxItems.length; i < len; i++) {
+    x = x * Number(parallaxItems[i].dataset.parallaxSpeed);
+    y = y * Number(parallaxItems[i].dataset.parallaxSpeed);
+    parallaxItems[i].style.transform = `translate3d(${x}px, ${y}px, 0px)`;
+  }
+
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("reservationForm");
 
@@ -91,11 +178,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   form.addEventListener("submit", async function (event) {
-    event.preventDefault();
+    event.preventDefault(); // Stop the default behavior (page reload)
 
     // Get form inputs
     const name = document.querySelector("[name='name']").value.trim();
-    const email = document.querySelector("[name='email']").value.trim();
     const phone = document.querySelector("[name='phone']").value.trim();
     const person = document.querySelector("[name='person']").value;
     const date = document.querySelector("[name='reservation-date']").value;
@@ -103,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const message = document.querySelector("[name='message']").value.trim();
 
     // Basic validation
-    if (!name || !email || !phone || !date || !time) {
+    if (!name || !phone || !date || !time) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -111,7 +197,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Prepare form data
     const formData = {
       name,
-      email,
       phone,
       person,
       reservationDate: date,
@@ -127,8 +212,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (response.ok) {
-        alert("Reservation successful! A confirmation email has been sent.");
-        form.reset();
+        alert("Reservation successful!");
+        form.reset(); // Clear form fields
       } else {
         alert("Failed to reserve. Please try again.");
       }
