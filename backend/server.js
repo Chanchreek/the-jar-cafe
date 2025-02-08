@@ -45,27 +45,42 @@ app.post('/send-email', async (req, res) => {
 
 // API Route to handle reservations
 app.post('/api/reservations', async (req, res) => {
-    const { name, phone, person, reservationDate, time, message } = req.body;
+    const { name, email, phone, person, reservationDate, time, message } = req.body;
 
-    if (!name || !phone || !person || !reservationDate || !time) {
+    if (!name || !email || !phone || !person || !reservationDate || !time) {
         return res.status(400).json({ error: 'All required fields must be filled.' });
     }
 
-    const mailOptions = {
+    // Email to Admin (You)
+    const adminMailOptions = {
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER, // Your email to receive reservations
+        to: process.env.EMAIL_USER, // Your email
         subject: `New Reservation from ${name}`,
-        text: `Name: ${name}\nPhone: ${phone}\nPersons: ${person}\nDate: ${reservationDate}\nTime: ${time}\nMessage: ${message || 'No additional message'}`,
+        text: `Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nPersons: ${person}\nDate: ${reservationDate}\nTime: ${time}\nMessage: ${message || 'No additional message'}`,
+    };
+
+    // Confirmation Email to User
+    const userMailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email, // Send to the user
+        subject: "Your Reservation is Confirmed - The Jar Café",
+        text: `Dear ${name},\n\nThank you for making a reservation at The Jar Café!\n\nHere are your reservation details:\nDate: ${reservationDate}\nTime: ${time}\nPersons: ${person}\n\nWe look forward to serving you!\n\nBest Regards,\nThe Jar Café`,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        res.status(200).json({ success: 'Reservation request sent successfully!' });
+        // Send emails concurrently
+        await Promise.all([
+            transporter.sendMail(adminMailOptions), // Send to Admin
+            transporter.sendMail(userMailOptions)  // Send to User
+        ]);
+
+        res.status(200).json({ success: 'Reservation request sent successfully! A confirmation email has been sent.' });
     } catch (error) {
         console.error("Error sending reservation email:", error);
         res.status(500).json({ error: 'Failed to send reservation request' });
     }
 });
+
 
 // Test Route
 app.get('/', (req, res) => {
