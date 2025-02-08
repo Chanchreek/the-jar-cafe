@@ -2,8 +2,7 @@
 
 /**
  * PRELOAD
- *
- * Loading will end after the document is fully loaded.
+ * Loading will end after document is loaded.
  */
 const preloader = document.querySelector("[data-preaload]");
 window.addEventListener("load", function () {
@@ -12,7 +11,7 @@ window.addEventListener("load", function () {
 });
 
 /**
- * NAVBAR
+ * NAVBAR TOGGLE
  */
 const navbar = document.querySelector("[data-navbar]");
 const navTogglers = document.querySelectorAll("[data-nav-toggler]");
@@ -24,18 +23,17 @@ const toggleNavbar = function () {
   document.body.classList.toggle("nav-active");
 };
 
-navTogglers.forEach(toggler => toggler.addEventListener("click", toggleNavbar));
+navTogglers.forEach((toggler) => toggler.addEventListener("click", toggleNavbar));
 
 /**
- * BACK TO TOP BUTTON
+ * HEADER & BACK TO TOP BUTTON
  */
 const header = document.querySelector("[data-header]");
 const backTopBtn = document.querySelector("[data-back-top-btn]");
-
 let lastScrollPos = 0;
+
 const hideHeader = function () {
-  const isScrollBottom = lastScrollPos < window.scrollY;
-  if (isScrollBottom) {
+  if (lastScrollPos < window.scrollY) {
     header.classList.add("hide");
   } else {
     header.classList.remove("hide");
@@ -55,6 +53,33 @@ window.addEventListener("scroll", function () {
 });
 
 /**
+ * HERO SLIDER FIX
+ */
+const heroSliderItems = document.querySelectorAll("[data-hero-slider-item]");
+const heroSliderPrevBtn = document.querySelector("[data-prev-btn]");
+const heroSliderNextBtn = document.querySelector("[data-next-btn]");
+let currentSlidePos = 0;
+
+const updateSliderPos = function () {
+  heroSliderItems.forEach((item, index) => {
+    item.classList.toggle("active", index === currentSlidePos);
+  });
+};
+
+const slideNext = function () {
+  currentSlidePos = (currentSlidePos + 1) % heroSliderItems.length;
+  updateSliderPos();
+};
+
+const slidePrev = function () {
+  currentSlidePos = (currentSlidePos - 1 + heroSliderItems.length) % heroSliderItems.length;
+  updateSliderPos();
+};
+
+heroSliderNextBtn.addEventListener("click", slideNext);
+heroSliderPrevBtn.addEventListener("click", slidePrev);
+
+/**
  * RESERVATION FORM HANDLING
  */
 document.addEventListener("DOMContentLoaded", function () {
@@ -66,10 +91,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   form.addEventListener("submit", async function (event) {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
 
     // Get form inputs
     const name = document.querySelector("[name='name']").value.trim();
+    const email = document.querySelector("[name='email']").value.trim();
     const phone = document.querySelector("[name='phone']").value.trim();
     const person = document.querySelector("[name='person']").value;
     const date = document.querySelector("[name='reservation-date']").value;
@@ -77,7 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const message = document.querySelector("[name='message']").value.trim();
 
     // Basic validation
-    if (!name || !phone || !date || !time) {
+    if (!name || !email || !phone || !date || !time) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -85,6 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Prepare form data
     const formData = {
       name,
+      email,
       phone,
       person,
       reservationDate: date,
@@ -100,8 +127,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       if (response.ok) {
-        alert("Reservation successful! You will receive a confirmation email.");
-        form.reset(); // Clear form fields
+        alert("Reservation successful! A confirmation email has been sent.");
+        form.reset();
       } else {
         alert("Failed to reserve. Please try again.");
       }
